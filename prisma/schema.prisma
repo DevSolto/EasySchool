@@ -11,7 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // Uncomment the next line if you use Prisma <5.10
+  // uncomment next line if you use Prisma <5.10
   // directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
@@ -21,43 +21,69 @@ enum Role {
   ADMIN
 }
 
-enum GradeLevel {
-  FIRST_YEAR
-  SECOND_YEAR
-  THIRD_YEAR
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
 
 model User {
-  id               String                @id @default(cuid())
-  name             String
-  cpf              String                @unique
-  role             Role
-  password         String
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
+  id        String     @id @default(cuid())
+  avatarUrl String?
+  name      String
+  cpf       String     @unique
+  role      Role
+  password  String
+  salt      String
+  schedule  Schedule[]
+
   studies          Study[]
   teaches          Teaches[]
   notices          Notice[]
   noticeRecipients NoticeRecipientUser[]
+  teacheSubjects   TeacheSubject[]
+  grades           Grade[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GradeLevel {
+  id    String @id @default(cuid())
+  name  String
+  value Float
+
+  classes Class[]
 }
 
 model Class {
-  id                   String                 @id @default(cuid())
-  name                 String
-  code                 String                 @unique
-  gradeLevel           GradeLevel
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
-  studies              Study[]
-  teaches              Teaches[]
-  NoticeRecipientClass NoticeRecipientClass[]
+  id   String @id @default(cuid())
+  name String
+  code String @unique
+
+  schedule     Schedule[]
+  gradeLevelId String
+  gradeLevel   GradeLevel @relation(fields: [gradeLevelId], references: [id])
+
+  studies                Study[]
+  teaches                Teaches[]
+  noticeRecipientClasses NoticeRecipientClass[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Study {
   studentId String
-  classId   String
-  user      User     @relation(fields: [studentId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
+  user      User   @relation(fields: [studentId], references: [id])
+
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -66,9 +92,11 @@ model Study {
 
 model Teaches {
   teacherId String
-  classId   String
-  user      User     @relation(fields: [teacherId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
+  user      User   @relation(fields: [teacherId], references: [id])
+
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -76,22 +104,27 @@ model Teaches {
 }
 
 model Notice {
-  id                   String                 @id @default(cuid())
-  title                String
-  content              String
-  senderId             String
-  user                 User                   @relation(fields: [senderId], references: [id])
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
-  noticeRecipients     NoticeRecipientUser[]
-  NoticeRecipientClass NoticeRecipientClass[]
+  id      String @id @default(cuid())
+  title   String
+  content String
+
+  senderId String
+  user     User   @relation(fields: [senderId], references: [id])
+
+  noticeRecipients       NoticeRecipientUser[]
+  noticeRecipientClasses NoticeRecipientClass[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model NoticeRecipientUser {
-  userId    String
-  noticeId  String
-  user      User?     @relation(fields: [userId], references: [id])
-  notice    Notice?  @relation(fields: [noticeId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  noticeId String
+  notice   Notice @relation(fields: [noticeId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -99,12 +132,82 @@ model NoticeRecipientUser {
 }
 
 model NoticeRecipientClass {
-  classId   String
-  noticeId  String
-  class     Class?    @relation(fields: [classId], references: [id])
-  notice    Notice?   @relation(fields: [noticeId], references: [id])
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
+  noticeId String
+  notice   Notice @relation(fields: [noticeId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([classId, noticeId])
+}
+
+model Subject {
+  id   String @id @default(cuid())
+  name String
+  code String @unique
+
+  schedule       Schedule[]
+  teacheSubjects TeacheSubject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeacheSubject {
+  teacherId String
+  user      User   @relation(fields: [teacherId], references: [id])
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teacherId, subjectId])
+}
+
+model Concept {
+  id    String @id @default(cuid())
+  name  String
+  value Float
+
+  grades Grade[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Grade {
+  id String @id @default(cuid())
+
+  conceptId String
+  concept   Concept @relation(fields: [conceptId], references: [id])
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Schedule {
+  id String @id @default(cuid())
+
+  dayOfWeek DayOfWeek
+  startTime DateTime
+  endTime   DateTime
+  room      String?
+
+  Class     Class   @relation(fields: [classId], references: [id])
+  classId   String
+  User      User    @relation(fields: [userId], references: [id])
+  userId    String
+  Subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

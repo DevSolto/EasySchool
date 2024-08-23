@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
+    "module": "esnext", // Ou "commonjs", dependendo da sua necessidade
+    "target": "esnext",
+    "moduleResolution": "node", // Esse é o valor que garante a correta resolução de módulos
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src"
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  }
 }
