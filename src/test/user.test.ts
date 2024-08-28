@@ -18,7 +18,55 @@ describe("POST /users", () => {
       .send({
         name: faker.person.fullName(),
         cpf: cpf.generate(),
-        avatarUrl: "asdasfss",
+        avatarUrl: "https://github.com/DevSolto.png",
+        role: "STUDENT",
+        password: faker.internet.password(),
+      })
+    expect(response.status).toBe(201)
+  })
+  it("Deve criar um usuário", async () => {
+    const response = await request(app.server)
+      .post('/users')
+      .send({
+        name: faker.person.fullName(),
+        cpf: cpf.generate(),
+        avatarUrl: "https://github.com/DevSolto.png",
+        role: "STUDENT",
+        password: faker.internet.password(),
+      })
+    expect(response.status).toBe(201)
+  })
+  it("Deve criar um usuário", async () => {
+    const response = await request(app.server)
+      .post('/users')
+      .send({
+        name: faker.person.fullName(),
+        cpf: cpf.generate(),
+        avatarUrl: "https://github.com/DevSolto.png",
+        role: "STUDENT",
+        password: faker.internet.password(),
+      })
+    expect(response.status).toBe(201)
+  })
+  it("Deve criar um usuário", async () => {
+    const response = await request(app.server)
+      .post('/users')
+      .send({
+        name: faker.person.fullName(),
+        cpf: cpf.generate(),
+        avatarUrl: "https://github.com/DevSolto.png",
+        role: "STUDENT",
+        password: faker.internet.password(),
+      })
+    expect(response.status).toBe(201)
+  })
+  it("Deve criar um usuário", async () => {
+    const response = await request(app.server)
+      .post('/users')
+      .send({
+        name: faker.person.fullName(),
+        cpf: cpf.generate(),
+        avatarUrl: "https://github.com/DevSolto.png",
         role: "STUDENT",
         password: faker.internet.password(),
       })
@@ -30,6 +78,14 @@ describe("POST /users", () => {
       .send()
     expect(response.status).toBe(200)
     console.log(response.body);
-    
+
+  })
+  it("Deve retornar todos os usuários", async () => {
+    const response = await request(app.server)
+      .get('/users/users?offset=0&limit=10&search=&students=false&teachers=false&admins=false')
+      .send()
+    expect(response.status).toBe(200)
+    console.log(response.body);
+
   })
 })

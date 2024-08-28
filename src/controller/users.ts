@@ -1,9 +1,9 @@
 import fastify, { FastifyInstance } from "fastify"
 import { ZodError } from "zod"
 import { createUserSchema } from "../schemas/users"
-import { createUserService, getUserByIdService } from "../service/users"
+import { createUserService, getTotalUsersService, getUserByIdService, getUsersService } from "../service/users"
 import { UserAlreadyExistsError } from "../error/users"
-import { idSchema } from "../schemas/all"
+import { idSchema, querySchema } from "../schemas/all"
 
 export async function userController(app: FastifyInstance) {
 
@@ -46,13 +46,39 @@ export async function userController(app: FastifyInstance) {
           message: "Validation Error",
           errors: error.errors,
         })
-      }   else {
+      } else {
         app.log.error(error)
         res.status(500).send({
           message: "Internal Server Error",
           error: error,
         })
       }
+    }
+  })
+  app.get('/users', async (req, res) => {
+    try {
+      const query = querySchema.parse(req.query);
+
+      const skip = Math.max(Number(query.offset), 0);
+      const take = Math.max(Number(query.limit), 10);
+
+      const totalUsers = await getTotalUsersService();
+
+      const users = await getUsersService(query);
+      res.status(200).send({
+        data: users,
+        pagination: {
+          total: totalUsers,
+          offset: Number(skip),
+          limit: Number(take),
+        }
+      })
+    } catch (error) {
+      app.log.error(error)
+      res.status(500).send({
+        message: "Internal Server Error",
+        error: error,
+      })
     }
   })
 }

@@ -16,7 +16,7 @@
     "test": "jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "Santiago Souto",
   "license": "ISC",
   "dependencies": {
     "@fastify/cors": "^9.0.1",
